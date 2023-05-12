@@ -1,0 +1,52 @@
+overwriteWithoutWarning = false
+offerDesktopShortcut = true
+offerStartMenuShortcut = true
+offerLaunchAfterInstall = true
+displayLicense = true
+requireLicenseAcceptance = true
+displayUrl = true
+displayCopyright = true
+displayVersion = true
+installMVWUpdater = true
+
+url = "https://www.steveoh.io"
+copyRight = "2023 Steve Oh"
+version = "1.0.0"
+programExecutable = "test.exe"
+
+[[userEnvironmentVariables]]
+var = "TEST_USER_ENV_VAR"
+value = "test_user_env_var_value"
+
+[[userEnvironmentVariables]]
+var = "TEST_USER_ENV_VAR_2"
+value = "test_user_env_var_value_2"
+
+[[systemEnvironmentVariables]]
+var = "TEST_SYSTEM_ENV_VAR"
+value = "test_system_env_var_value"
+
+[[systemEnvironmentVariables]]
+var = "TEST_SYSTEM_ENV_VAR_2"
+value = "test_system_env_var_value_2"
+
+[[autoStartPrograms]]
+name = "test_auto_start_program"
+path = "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
+arguments = ""
+
+[[moveFileSteps]]
+source = "C:\Users\Owner\Downloads\update.svg"
+destination = "C:\Users\Owner\Downloads\update2.svg"
+
+[[moveDirectorySteps]]
+source = "C:\Users\Owner\Downloads\test"
+destination = "C:\Users\Owner\Downloads\test2"
+
+[[license]]
+text = "This is a test license"
+acceptanceText = "I accept this license"
+
+[[license]]
+text = "This is a test license 2"
+acceptanceText = "I accept this license 2"
