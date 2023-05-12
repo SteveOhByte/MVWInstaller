@@ -69,33 +69,45 @@ public class MVWInstaller {
             Settings.programName = config.getString("programName");
 
             List<Toml> userEnvironmentVariableTables = config.getTables("userEnvironmentVariables");
-            for (Toml table : userEnvironmentVariableTables) {
-                Settings.userEnvironmentVariables.add(new UserEnvironmentVariable(table.getString("var"), table.getString("value")));
+            if (userEnvironmentVariableTables != null && userEnvironmentVariableTables.size() > 0) {
+                for (Toml table : userEnvironmentVariableTables) {
+                    Settings.userEnvironmentVariables.add(new UserEnvironmentVariable(table.getString("var"), table.getString("value")));
+                }
             }
 
             List<Toml> systemEnvironmentVariableTables = config.getTables("systemEnvironmentVariables");
-            for (Toml table : systemEnvironmentVariableTables) {
-                Settings.systemEnvironmentVariables.add(new SystemEnvironmentVariable(table.getString("var"), table.getString("value")));
+            if (systemEnvironmentVariableTables != null && systemEnvironmentVariableTables.size() > 0) {
+                for (Toml table : systemEnvironmentVariableTables) {
+                    Settings.systemEnvironmentVariables.add(new SystemEnvironmentVariable(table.getString("var"), table.getString("value")));
+                }
             }
 
             List<Toml> autoStartProgramTables = config.getTables("autoStartPrograms");
-            for (Toml table : autoStartProgramTables) {
-                Settings.autoStartPrograms.add(new AutoStartProgram(table.getString("name"), table.getString("path"), table.getString("arguments")));
+            if (autoStartProgramTables != null && autoStartProgramTables.size() > 0) {
+                for (Toml table : autoStartProgramTables) {
+                    Settings.autoStartPrograms.add(new AutoStartProgram(table.getString("name"), table.getString("path"), table.getString("arguments")));
+                }
             }
 
             List<Toml> moveFileStepTables = config.getTables("moveFileSteps");
-            for (Toml table : moveFileStepTables) {
-                Settings.moveFileSteps.add(new MoveFileStep(table.getString("source"), table.getString("destination")));
+            if (moveFileStepTables != null && moveFileStepTables.size() > 0) {
+                for (Toml table : moveFileStepTables) {
+                    Settings.moveFileSteps.add(new MoveFileStep(table.getString("source"), table.getString("destination")));
+                }
             }
 
             List<Toml> moveDirectoryStepTables = config.getTables("moveDirectorySteps");
-            for (Toml table : moveDirectoryStepTables) {
-                Settings.moveDirectorySteps.add(new MoveDirectoryStep(table.getString("source"), table.getString("destination")));
+            if (moveDirectoryStepTables != null && moveDirectoryStepTables.size() > 0) {
+                for (Toml table : moveDirectoryStepTables) {
+                    Settings.moveDirectorySteps.add(new MoveDirectoryStep(table.getString("source"), table.getString("destination")));
+                }
             }
 
             List<Toml> licenseTables = config.getTables("license");
-            for (Toml table : licenseTables) {
-                Settings.licenses.add(new License(table.getString("text"), table.getString("acceptanceText")));
+            if (licenseTables != null && licenseTables.size() > 0) {
+                for (Toml table : licenseTables) {
+                    Settings.licenses.add(new License(table.getString("text"), table.getString("acceptanceText")));
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

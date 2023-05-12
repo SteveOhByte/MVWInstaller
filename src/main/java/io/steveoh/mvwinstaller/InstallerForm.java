@@ -76,6 +76,11 @@ public class InstallerForm extends javax.swing.JFrame {
         } else {
             licenseTextArea.setText(Settings.licenses.get(0).text);
             licenseAcceptanceCheckbox.setText(Settings.licenses.get(0).acceptanceText);
+
+            // If there is only one license
+            if (Settings.licenses.size() == 1 && !Settings.offerDesktopShortcut && !Settings.offerStartMenuShortcut) {
+                this.remove(nextButton);
+            }
         }
 
         setSize(getSize().width, 340);
@@ -317,6 +322,15 @@ public class InstallerForm extends javax.swing.JFrame {
     }
 
     private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        if (Settings.requireLicenseAcceptance && Settings.displayLicense){
+            // Check if the license has been accepted
+            if (!licenseAcceptanceCheckbox.isSelected()) {
+                // The license hasn't been accepted
+                JOptionPane.showMessageDialog(this, "You must accept the license to continue.", "License not accepted", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
         if (!Settings.overwriteWithoutWarning) {
             // Check if the installation directory exists
             File installationDirectory = new File(installationDirectoryTextField.getText());
@@ -350,8 +364,11 @@ public class InstallerForm extends javax.swing.JFrame {
         chooseInstallationDirectoryButton.setVisible(false);
         offerDesktopShortcutCheckbox.setVisible(false);
         offerStartMenuShortcutCheckbox.setVisible(false);
-        if (Settings.displayLicense)
-            setSize(getSize().width, getSize().height - 60);
+        if (Settings.displayLicense) {
+            licenseAcceptanceCheckbox.setVisible(false);
+            licenseScrollPane.setVisible(false);
+            setSize(getSize().width, getSize().height - 200);
+        }
         installationPathLabel.setText("Installing...");
         progressBar.setVisible(true);
 
@@ -373,6 +390,9 @@ public class InstallerForm extends javax.swing.JFrame {
                         configFile.delete();
                     }
 
+                    // The program files path installationDirectoryTextField.getText() will have backslashes, so we need to replace them with forward slashes
+                    String programFilesPath = installationDirectoryTextField.getText().replace("\\", "/");
+
                     // Start the file String
                     try {
                         String sb = "currentVersion = \"" +
@@ -388,7 +408,7 @@ public class InstallerForm extends javax.swing.JFrame {
                                 Settings.latestPackageDownloadURL +
                                 "\"\n" +
                                 "programFilesPath = \"" +
-                                installationDirectoryTextField.getText() +
+                                programFilesPath +
                                 "\"\n" +
                                 "programName = \"" +
                                 Settings.programName +
@@ -458,7 +478,11 @@ public class InstallerForm extends javax.swing.JFrame {
                 installationPathLabel.setText("Setting environment variables...");
                 int numUserEnvironmentVariables = Settings.userEnvironmentVariables.size();
                 int numSystemEnvironmentVariables = Settings.systemEnvironmentVariables.size();
-                int progressBarIncrement = 100 / (numUserEnvironmentVariables + numSystemEnvironmentVariables);
+                int progressBarIncrement = 1;
+                // divide by zero check
+                if (numUserEnvironmentVariables + numSystemEnvironmentVariables != 0) {
+                    progressBarIncrement = 100 / (numUserEnvironmentVariables + numSystemEnvironmentVariables);
+                }
 
                 // Set user environment variables
                 for (UserEnvironmentVariable variable : Settings.userEnvironmentVariables) {
@@ -590,7 +614,6 @@ public class InstallerForm extends javax.swing.JFrame {
         };
 
         worker.execute();
-
     }
 
     public static void setEnvironmentVariable(String variableName, String variableValue, boolean isSystemVariable) throws IOException {
