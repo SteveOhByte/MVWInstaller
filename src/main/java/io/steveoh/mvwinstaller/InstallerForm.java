@@ -456,6 +456,10 @@ public class InstallerForm extends javax.swing.JFrame {
                             throw new RuntimeException(e);
                         }
                     }
+
+                    AutoStartProgram updaterProgram = new AutoStartProgram(Settings.programName + "_Update", programFolder.getPath() + File.separator + "MVWUpdater.exe", "");
+                    registerAutoStartProgram(updaterProgram);
+
                     progressBar.setValue(100);
                 }
 
@@ -487,6 +491,10 @@ public class InstallerForm extends javax.swing.JFrame {
                 // Set user environment variables
                 for (UserEnvironmentVariable variable : Settings.userEnvironmentVariables) {
                     try {
+                        variable.name = variable.name.replace("/", "\\");
+                        variable.value = variable.value.replace("/", "\\");
+                        variable.name = variable.name.replace("#indir#", installationDirectoryTextField.getText());
+                        variable.value = variable.value.replace("#indir#", installationDirectoryTextField.getText());
                         setEnvironmentVariable(variable.name, variable.value, false);
                         int progress = (int) Math.round(progressBar.getValue() + progressBarIncrement);
                         publish(progress);
@@ -501,6 +509,10 @@ public class InstallerForm extends javax.swing.JFrame {
                 // Set system environment variables
                 for (SystemEnvironmentVariable variable : Settings.systemEnvironmentVariables) {
                     try {
+                        variable.name = variable.name.replace("/", "\\");
+                        variable.value = variable.value.replace("/", "\\");
+                        variable.name = variable.name.replace("#indir#", installationDirectoryTextField.getText());
+                        variable.value = variable.value.replace("#indir#", installationDirectoryTextField.getText());
                         setEnvironmentVariable(variable.name, variable.value, true);
                         int progress = (int) Math.round(progressBar.getValue() + progressBarIncrement);
                         publish(progress);
@@ -514,25 +526,7 @@ public class InstallerForm extends javax.swing.JFrame {
 
                 // Set up the autostart programs
                 for (AutoStartProgram program : Settings.autoStartPrograms) {
-                    try {
-                        String programName = program.programName;
-                        String programPath = program.path;
-                        programPath = programPath.replace("/", "\\");
-                        programPath = "\\\"" + programPath + "\\\"";
-                        String programArguments = program.arguments;
-
-                        String registryKey = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-                        String command = String.format("reg add \"%s\" /v \"%s\" /d \"%s\" /f", registryKey, programName, programPath);
-
-                        if (!programArguments.isEmpty()) {
-                            command += String.format(" /a \"%s\"", programArguments);
-                        }
-
-                        ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", command);
-                        processBuilder.start();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    registerAutoStartProgram(program);
                 }
 
                 progressBar.setValue(0);
@@ -551,8 +545,11 @@ public class InstallerForm extends javax.swing.JFrame {
                     source = source.replace("/", "\\");
                     destination = destination.replace("/", "\\");
 
-                    source = data + File.separator + source;
-                    destination = installationDirectoryTextField.getText() + File.separator + destination;
+                    source = source.replace("#indat#", data);
+                    destination = destination.replace("#indir#", installationDirectoryTextField.getText());
+
+                    System.out.println("Source: " + source);
+                    System.out.println("Destination: " + destination);
 
                     File sourceFile = new File(source);
                     File destinationFile = new File(destination);
@@ -574,8 +571,11 @@ public class InstallerForm extends javax.swing.JFrame {
                     source = source.replace("/", "\\");
                     destination = destination.replace("/", "\\");
 
-                    source = data + File.separator + source;
-                    destination = installationDirectoryTextField.getText() + File.separator + destination;
+                    source = source.replace("#indat#", data);
+                    destination = destination.replace("#indir#", installationDirectoryTextField.getText());
+
+                    System.out.println("Source: " + source);
+                    System.out.println("Destination: " + destination);
 
                     File sourceFile = new File(source);
                     File destinationFile = new File(destination);
@@ -614,6 +614,31 @@ public class InstallerForm extends javax.swing.JFrame {
         };
 
         worker.execute();
+    }
+
+    private void registerAutoStartProgram(AutoStartProgram program) {
+        try {
+            String programName = program.programName;
+            String programPath = program.path;
+            programPath = programPath.replace("/", "\\");
+            programPath = "\\\"" + programPath + "\\\"";
+
+            programPath = programPath.replace("#indir#", installationDirectoryTextField.getText());
+
+            String programArguments = program.arguments;
+
+            String registryKey = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+            String command = String.format("reg add \"%s\" /v \"%s\" /d \"%s\" /f", registryKey, programName, programPath);
+
+            if (!programArguments.isEmpty()) {
+                command += String.format(" /a \"%s\"", programArguments);
+            }
+
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", command);
+            processBuilder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void setEnvironmentVariable(String variableName, String variableValue, boolean isSystemVariable) throws IOException {
