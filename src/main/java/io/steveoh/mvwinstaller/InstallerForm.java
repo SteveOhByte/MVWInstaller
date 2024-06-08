@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class InstallerForm extends javax.swing.JFrame {
 
@@ -491,6 +493,8 @@ public class InstallerForm extends javax.swing.JFrame {
                 // Set user environment variables
                 for (UserEnvironmentVariable variable : Settings.userEnvironmentVariables) {
                     try {
+                        variable.name = resolvePath(variable.name);
+                        variable.value = resolvePath(variable.value);
                         variable.name = variable.name.replace("/", "\\");
                         variable.value = variable.value.replace("/", "\\");
                         variable.name = variable.name.replace("#indir#", installationDirectoryTextField.getText());
@@ -509,6 +513,8 @@ public class InstallerForm extends javax.swing.JFrame {
                 // Set system environment variables
                 for (SystemEnvironmentVariable variable : Settings.systemEnvironmentVariables) {
                     try {
+                        variable.name = resolvePath(variable.name);
+                        variable.value = resolvePath(variable.value);
                         variable.name = variable.name.replace("/", "\\");
                         variable.value = variable.value.replace("/", "\\");
                         variable.name = variable.name.replace("#indir#", installationDirectoryTextField.getText());
@@ -541,6 +547,7 @@ public class InstallerForm extends javax.swing.JFrame {
                 for (MoveFileStep step : Settings.moveFileSteps) {
                     String source = step.source;
                     String destination = step.destination;
+                    destination = resolvePath(destination);
 
                     source = source.replace("/", "\\");
                     destination = destination.replace("/", "\\");
@@ -567,6 +574,7 @@ public class InstallerForm extends javax.swing.JFrame {
                 for (MoveDirectoryStep step : Settings.moveDirectorySteps) {
                     String source = step.source;
                     String destination = step.destination;
+                    destination = resolvePath(destination);
 
                     source = source.replace("/", "\\");
                     destination = destination.replace("/", "\\");
@@ -693,5 +701,25 @@ public class InstallerForm extends javax.swing.JFrame {
             e.printStackTrace();
         }
         System.exit(0);
+    }
+
+    private String resolvePath(String path) {
+        // Matches environment variables in the format %VAR_NAME%
+        Pattern pattern = Pattern.compile("%(.*?)%");
+        Matcher matcher = pattern.matcher(path);
+        StringBuffer resolvedPath = new StringBuffer();
+
+        while (matcher.find()) {
+            String envValue = System.getenv(matcher.group(1));
+            if (envValue != null) {
+                // Replace the match with the value of the environment variable
+                matcher.appendReplacement(resolvedPath, Matcher.quoteReplacement(envValue));
+            } else {
+                // No replacement found, keep the original text
+                matcher.appendReplacement(resolvedPath, matcher.group(0));
+            }
+        }
+        matcher.appendTail(resolvedPath);
+        return resolvedPath.toString();
     }
 }
